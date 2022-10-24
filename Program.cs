@@ -1,44 +1,152 @@
-﻿namespace prctic4
+﻿using static System.Console;
+using static System.ConsoleKey;
+using static System.ConsoleColor;
+
+namespace ToD0
 {
-    class Program
+    internal class Program
     {
-        public static List<Task> taskList = new List<Task>();
-
-        static void Main(string[] args)
+        static void Main()
         {
-            Task taskOne = new Task(name: "сходить в магазин", description: "купить продукты", date: new DateTime(2022, 10, 20));
-            Task taskTwo = new Task(name: "сделать практическую", description: "по любимому си шарпу", date: new DateTime(2022, 10, 20));
-            Task taskThree = new Task(name: "помочь маме", description: "сделать уборку", date: new DateTime(2022, 10, 21));
-            Task taskFour = new Task(name: "пойти погулять", description: "с Дашей и Машей", date: new DateTime(2022, 10, 19));
-            Task taskFive = new Task(name: "кота покормить", description: "сухим кормом", date: new DateTime(2022, 10, 19));
+            WriteLine("ДЛЯ ЗАПУСКА ПРОГРАММЫ НАЖМИТЕ ПРОБЕЛ");
+            Arrow();
+        }
+        public static void Arrow()
+        {
+            Note note1 = new()
+            {
+                Name = "сделаю си шарпик",
+                Description = "Или да",
+                EndDate = new DateTime(2022, 10, 14)
+            };
 
-            taskList.Add(taskOne);
-            taskList.Add(taskTwo);
-            taskList.Add(taskThree);
-            taskList.Add(taskFour);
-            taskList.Add(taskFive);
+            Note note2 = new()
+            {
+                Name = "Выспаться",
+                Description = "не я же в мпт учусь",
+                EndDate = new DateTime(2022, 10, 16)
+            };
 
-            DateTime date = new(2022, 10, 20);
+            Note note3 = new()
+            {
+                Name = "маме помочь",
+                Description = "купить продукты и яйца",
+                EndDate = new DateTime(2022, 10, 16)
+            };
 
-            List<Task> orderedList = taskList;
-            orderedList = taskList.Where(o => o.date == date).ToList();
+            Note note4 = new()
+            {
+                Name = "купить саше шоколадку",
+                Description = "падла блин",
+                EndDate = new DateTime(2022, 10, 15)
+            };
 
-            var menu = new Menu(taskList);
-            menu.ShowMenu(date);
+            Note note5 = new()
+            {
+                Name = "Поехать утром в москву",
+                Description = "надеюсь без пробок",
+                EndDate = new DateTime(2022, 10, 15)
+            };
+
+            List<Note> allNotes = new()
+            {
+                note1,
+                note2,
+                note3,
+                note4,
+                note5
+            };
+
+            DateTime dayNow = new(2022, 10, 15);
+            int position = 1;
+            var key = ReadKey();
+            while (key.Key != Enter)
+            {
+                switch (key.Key)
+                {
+                    case UpArrow:
+                        position--;
+                        break;
+                    case DownArrow:
+                        position++;
+                        break;
+                    case LeftArrow:
+                        dayNow = dayNow.AddDays(-1);
+                        break;
+                    case RightArrow:
+                        dayNow = dayNow.AddDays(1);
+                        break;
+                    case OemPlus:
+                        //allNotes = Add(position, dayNow, allNotes);
+                        break;
+                    case OemMinus:
+                        allNotes = Remove(position, dayNow, allNotes);
+                        break;
+                    case Escape:
+                        Clear();
+                        WriteLine(" нне забывай про меня");
+                        Environment.Exit(0);
+                        break;
+                }
+
+                Clear();
+
+                ShowDate(dayNow, allNotes);
+
+                SetCursorPosition(0, position);
+                WriteLine("->");
+
+                key = ReadKey();
+            }
+
+            Clear();
+            ShowInfo(position, dayNow, allNotes);
+            Arrow();
+        }
+        private static void ShowInfo(int position, DateTime date, List<Note> myNotes)
+        {
+            List<Note> sortedNotes = myNotes.Where(note => note.EndDate.Date == date.Date).ToList();
+            WriteLine(sortedNotes[position - 1].Name +
+                      "\t" + "|" + "\t" +
+                      sortedNotes[position - 1].EndDate.Date + "\n" +
+                    
+                      " " + sortedNotes[position - 1].Description + "\n" + "\n" +
+                      
+                      "Для возвращения меню нажмите Пробел");
+        }
+        private static void ShowDate(DateTime date, List<Note> myNotes)
+        {
+            Clear();
+            ForegroundColor = Green;
+            WriteLine("-*-*-" + date.ToLongDateString() + "-*-*-");
+
+            List<Note> sortedNotes = myNotes.Where(note => note.EndDate.Date == date.Date).ToList();
+            foreach (Note note in sortedNotes)
+            {
+                WriteLine("  " + note.Name);
+            }
+        }
+        private static List<Note> Remove(int position, DateTime date, List<Note> myNotes)
+        {
+            List<Note> sortedNotes = myNotes.Where(note => note.EndDate.Date == date.Date).ToList();
+            Note forDelete = sortedNotes[position - 1];
+            myNotes.Remove(forDelete);
+            foreach (Note note in myNotes)
+            {
+                WriteLine("  " + note.Name);
+            }
+
+            return myNotes;
+
         }
 
-        public static List<Task> ShowTasksByDate(DateTime date)
+        private static List<Note> Add(int position, DateTime date, List<Note> myNotes)
         {
-            List<Task> tasksByDateList = taskList;
-            tasksByDateList = taskList.Where(o => o.date == date).ToList();
+            List<Note> sortedNotes = myNotes.Where(note => note.EndDate.Date == date.Date).ToList();
+            Note newNote = new Note();
+            sortedNotes.Add(newNote);
 
-            return tasksByDateList;
-        }
-        public static void ViewDetails(int index)
-        {
-            int taskID = index;
-
-            Console.Write($"Описание - {taskList.ElementAt(taskID).description}");
+            return myNotes;
         }
     }
 }
